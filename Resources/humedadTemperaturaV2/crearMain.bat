@@ -1,0 +1,1 @@
+C:\Users\Gomez\AppData\Local\Programs\Python\Python37-32\Scripts\pyuic5.exe -x ventana.ui -o ventana.py
