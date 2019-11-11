@@ -18,7 +18,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../../carpeta sin título/Resources/Ucaldas.png</normaloff>../../carpeta sin título/Resources/Ucaldas.png</iconset>
+    <normaloff>../Resources/Ucaldas.png</normaloff>../Resources/Ucaldas.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="formLayoutWidget_2">
@@ -76,7 +76,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>../../carpeta sin título/Resources/Ucaldas.png</pixmap>
+     <pixmap>../Resources/Ucaldas.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>

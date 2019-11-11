@@ -225,7 +225,7 @@ def AAfilledRoundedRect(surface,rect,color,radius=0.4):
 
     return surface.blit(rectangle,pos)
 
-def Window():
+def WindowPygame():
     pygame.init()
 
     # Crear ventana

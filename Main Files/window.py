@@ -15,7 +15,7 @@ class Window(QMainWindow):
 
 
 	def initUI(self):
-		self.collect.clicked.connect(lambda: Window())
+		self.collect.clicked.connect(lambda: WindowPy())
 		#self.consult.clicked.connect(print('consult'))
 
 #start application
