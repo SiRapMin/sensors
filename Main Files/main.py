@@ -1,8 +1,9 @@
-date######################## IMPORTS ########################
+######################## IMPORTS ########################
 from pygame.locals import *
 from tkinter import *
 from datetime import date
 from datetime import datetime
+#import datetime
 from pymongo import MongoClient
 import matplotlib.backends.backend_agg as agg
 import easygui as eg
@@ -48,11 +49,22 @@ class Sensor():
         self.db = con.sensors
 
     def uploadDataMongoDb(self):
-        date = str(datetime.now())
-        self.db.CO2.insert_one({'value': self.CO2, 'date': date})
-        self.db.TVOC.insert_one({'value': self.TVOC, 'date': date})
-        self.db.humidity.insert_one({'value': self.humidity, 'date': date})
-        self.db.temperature.insert_one({'value': self.temperature, 'date': date})
+        today = datetime.now()
+        day = str(format(today.day))
+        month = str(format(today.month))
+        year = str(format(today.year))
+        hour = str(format(today.hour))
+        minute = str(format(today.minute))
+        second = str(format(today.second))
+
+        dateNow = year +'-'+ month +'-'+ day +'T'+ hour +':'+ minute +':'+ second
+        print('AQUI'+dateNow)
+        d = datetime.strptime(dateNow, "%Y-%m-%dT%H:%M:%S") 
+        print('TAMBIEN AQUI'+str(d))
+        self.db.CO2.insert_one({'valor': self.CO2, 'fecha': d})
+        self.db.TVOC.insert_one({'valor': self.TVOC, 'fecha': d})
+        self.db.humidity.insert_one({'valor': self.humidity, 'fecha': d})
+        self.db.temperature.insert_one({'valor': self.temperature, 'fecha': d})
 
     def startThread(self):
         self.Thread = threading.Thread(target=self.runThread)
@@ -61,7 +73,7 @@ class Sensor():
 
     def arduinoConnect(self):
         # Iniciando conexión serial
-        self.arduinoPort = serial.Serial('COM5', 9600)
+        self.arduinoPort = serial.Serial('COM3', 9600)
         # Esperamos a que el arduino se reinicie correctamente
         time.sleep(2)
 
@@ -150,7 +162,69 @@ class Sensor():
         renderer = self.canvas4.get_renderer()
         self.graphicTVOC = renderer.tostring_rgb()
 
-######################## PYGAME METHOD ########################
+def button(msg,x,y,w,h,ic,ac, gameDisplay, action=None):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    print(click)
+    if x+w > mouse[0] > x and y+h > mouse[1] > y:
+        #pygame.draw.rect(gameDisplay, ac,(x,y,w,h))
+        AAfilledRoundedRect(gameDisplay, (x,y,w,h), ac, 0.25)
+
+
+        if click[0] == 1 and action != None:
+            action()         
+    else:
+        #pygame.draw.rect(gameDisplay, ic,(x,y,w,h))
+        AAfilledRoundedRect(gameDisplay, (x,y,w,h), ic, 0.25)
+
+    smallText = pygame.font.SysFont("comicsansms",round(w*0.15))
+    textSurf, textRect = text_objects(msg, smallText)
+    textRect.center = ( (x+(w/2)), (y+(h/2)) )
+    gameDisplay.blit(textSurf, textRect)
+
+def text_objects(text, font):
+    textSurface = font.render(text, True, (255, 255, 255))
+    return textSurface, textSurface.get_rect()
+
+def AAfilledRoundedRect(surface,rect,color,radius=0.4):
+
+    """
+    AAfilledRoundedRect(surface,rect,color,radius=0.4)
+
+    surface : destination
+    rect    : rectangle
+    color   : rgb or rgba
+    radius  : 0 <= radius <= 1
+    """
+
+    rect         = Rect(rect)
+    color        = Color(*color)
+    alpha        = color.a
+    color.a      = 0
+    pos          = rect.topleft
+    rect.topleft = 0,0
+    rectangle    = pygame.Surface(rect.size,SRCALPHA)
+
+    circle       = pygame.Surface([min(rect.size)*3]*2,SRCALPHA)
+    pygame.draw.ellipse(circle,(0,0,0),circle.get_rect(),0)
+    circle       = pygame.transform.smoothscale(circle,[int(min(rect.size)*radius)]*2)
+
+    radius              = rectangle.blit(circle,(0,0))
+    radius.bottomright  = rect.bottomright
+    rectangle.blit(circle,radius)
+    radius.topright     = rect.topright
+    rectangle.blit(circle,radius)
+    radius.bottomleft   = rect.bottomleft
+    rectangle.blit(circle,radius)
+
+    rectangle.fill((0,0,0),rect.inflate(-radius.w,0))
+    rectangle.fill((0,0,0),rect.inflate(0,-radius.h))
+
+    rectangle.fill(color,special_flags=BLEND_RGBA_MAX)
+    rectangle.fill((255,255,255,alpha),special_flags=BLEND_RGBA_MIN)
+
+    return surface.blit(rectangle,pos)
+
 def Window():
     pygame.init()
 
@@ -162,9 +236,9 @@ def Window():
 
     #Crear clase Interfaz
     sensor = Sensor()
-    sensor.arduinoConnect()
+    #sensor.arduinoConnect()
     sensor.mongoConnect()
-    sensor.startThread()
+    #sensor.startThread()
 
 
     myFont = pygame.font.Font(None, 30)
@@ -182,8 +256,8 @@ def Window():
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
-                sensor.arduinoDisconnect()
-                sensor.threadStop()
+                #sensor.arduinoDisconnect()
+                #sensor.threadStop()
                 sys.exit()
         if(sensor.graphicHum != None and
                 sensor.canvas1 != None and
@@ -207,6 +281,14 @@ def Window():
         window.blit(CO2, (dimensionx, dimensiony+distancey))
         window.blit(Temp, (dimensionx+distancex, dimensiony))
         window.blit(TVOC, (dimensionx+distancex, dimensiony+distancey))
+
+        blue = (7, 88, 230)
+        light_blue = (47, 128, 255)
+
+        button("Conectar", 800, 100, 120, 40, blue, light_blue, window, sensor.arduinoConnect)
+        button("Desconectar", 800, 300, 120, 40, blue, light_blue, window, sensor.arduinoDisconnect)
+
+        #AAfilledRoundedRect(window,(50,50,200,50),(200,20,20),0.5)
 
         pygame.display.update()
 
