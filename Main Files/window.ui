@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>370</width>
-    <height>365</height>
+    <height>410</height>
    </rect>
   </property>
   <property name="mouseTracking">
@@ -39,11 +39,7 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QPushButton" name="consult">
-       <property name="text">
-        <string>Consult Data</string>
-       </property>
-      </widget>
+      <widget class="QComboBox" name="opcionSerial"/>
      </item>
     </layout>
    </widget>
@@ -51,7 +47,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>50</y>
+      <y>60</y>
       <width>331</width>
       <height>131</height>
      </rect>
@@ -67,7 +63,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>200</y>
+      <y>250</y>
       <width>181</width>
       <height>121</height>
      </rect>
@@ -85,6 +81,19 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QPushButton" name="consult">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>200</y>
+      <width>331</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Consult Data</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -92,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>370</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
