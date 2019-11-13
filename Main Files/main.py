@@ -23,9 +23,10 @@ screen_width = 0
 screen_height = 0
 
 class Sensor():
-    def __init__(self):
+    def __init__(self,puertoSerial):
 
         #Se inicializan las variables que guardan los datos de los sensores
+        self.puertoSerial = puertoSerial
         self.humiditylist = []
         self.humidityAvgList=[]
         self.humidity = 0
@@ -52,6 +53,8 @@ class Sensor():
         self.canvas3 = None
         self.graphicTVOC = None
         self.canvas4 = None
+        self.graphicUltraViolet = None
+        self.canvas5 = None
         self.db = None
 
 ######################## METHODS ########################
@@ -84,7 +87,7 @@ class Sensor():
 
     def arduinoConnect(self):
         # Iniciando conexión serial
-        self.arduinoPort = serial.Serial('COM4', 9600)
+        self.arduinoPort = serial.Serial(self.puertoSerial, 9600)
         # Esperamos a que el arduino se reinicie correctamente
         time.sleep(2)
 
@@ -133,13 +136,14 @@ class Sensor():
         width = 3.1
         height = (screen_height * 0.00261)
         dpi = 120
+        word_graph_size = screen_width*0.004
         #Generar la grafica de la humidity
         fig = pylab.figure(figsize=[width, height],  # Inches
                            dpi=dpi,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
                            )
         ax = fig.gca()
         for label in ax.get_xticklabels() + ax.get_yticklabels():
-            label.set_fontsize(5)
+            label.set_fontsize(word_graph_size)
         ax.plot(self.humiditylist)
         self.humidityAvgList.append(self.getAverageFromList(self.humiditylist))
         ax.plot(self.humidityAvgList)
@@ -154,7 +158,10 @@ class Sensor():
                            dpi=dpi,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
                            )
         ax = fig.gca()
+        for label in ax.get_xticklabels() + ax.get_yticklabels():
+            label.set_fontsize(word_graph_size)
         ax.plot(self.CO2list)
+
         self.CO2AvgList.append(self.getAverageFromList(self.CO2list))
         ax.plot(self.CO2AvgList)
         self.canvas2 = agg.FigureCanvasAgg(fig)
@@ -168,6 +175,8 @@ class Sensor():
                            dpi=dpi,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
                            )
         ax = fig.gca()
+        for label in ax.get_xticklabels() + ax.get_yticklabels():
+            label.set_fontsize(word_graph_size)
         ax.plot(self.temperaturelist)
         self.temperatureAvgList.append(self.getAverageFromList(self.temperaturelist))
         ax.plot(self.temperatureAvgList)
@@ -175,12 +184,15 @@ class Sensor():
         self.canvas3.draw()
         renderer = self.canvas3.get_renderer()
         self.graphicTemp = renderer.tostring_rgb()
+
         # Generar la grafica del TVOC
 
         fig = pylab.figure(figsize=[width, height],  # Inches
                            dpi=dpi,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
                            )
         ax = fig.gca()
+        for label in ax.get_xticklabels() + ax.get_yticklabels():
+            label.set_fontsize(word_graph_size)
         ax.plot(self.TVOClist)
         self.TVOCAvgList.append(self.getAverageFromList(self.TVOClist))
         ax.plot(self.TVOCAvgList)
@@ -188,6 +200,22 @@ class Sensor():
         self.canvas4.draw()
         renderer = self.canvas4.get_renderer()
         self.graphicTVOC = renderer.tostring_rgb()
+
+        # Generar la grafica del ULTRAVIOLET
+
+        fig = pylab.figure(figsize=[width, height],  # Inches
+                           dpi=dpi,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
+                           )
+        ax = fig.gca()
+        for label in ax.get_xticklabels() + ax.get_yticklabels():
+            label.set_fontsize(word_graph_size)
+        ax.plot(self.ultravioletlist)
+        self.ultravioletAvgList.append(self.getAverageFromList(self.ultravioletlist))
+        ax.plot(self.ultravioletAvgList)
+        self.canvas5 = agg.FigureCanvasAgg(fig)
+        self.canvas5.draw()
+        renderer = self.canvas5.get_renderer()
+        self.graphicUltraViolet = renderer.tostring_rgb()
 
     def getAverageFromList(self,arrayList):
         acc = 0
@@ -269,9 +297,9 @@ def AAfilledRoundedRect(surface,rect,color,radius=0.4):
     return surface.blit(rectangle,pos)
 
 
-def WindowPygame():
+def WindowPygame(puertoSerial):
     pygame.init()
-
+    print(puertoSerial)
     # Crear ventana
     window = pygame.display.set_mode((0, 0), FULLSCREEN)
     global screen_height
@@ -283,8 +311,7 @@ def WindowPygame():
 
 
     #Crear clase Interfaz
-    sensor = Sensor()
-    #sensor.arduinoConnect()
+    sensor = Sensor(puertoSerial)
     #sensor.mongoConnect()
     #sensor.startThread()
 
@@ -302,6 +329,7 @@ def WindowPygame():
         CO2 = myFont.render("CO2: "+str(sensor.CO2)+" ppm", 0,(0,0,0))
         Temp = myFont.render("Temperature: "+str(sensor.temperature)+"°C", 0,(0,0,0))
         TVOC = myFont.render("TVOC: "+str(sensor.TVOC)+" mg/m3", 0,(0,0,0))
+        ultraViolet = myFont.render("Ultraviolet: " + str(sensor.ultraviolet) + " ???", 0, (0, 0, 0))
         for event in pygame.event.get():
             if event.type == QUIT:
                 sensor.stop = True
@@ -322,16 +350,21 @@ def WindowPygame():
                 sensor.graphicTVOC != None and
                 sensor.canvas3 != None and
                 sensor.graphicTemp!= None and
-                sensor.canvas4 != None and sensor.stop == False):
+                sensor.canvas4 != None  and
+                sensor.graphicUltraViolet != None and
+                sensor.canvas5 != None and
+                sensor.stop == False):
 
             surf = pygame.image.fromstring(sensor.graphicHum, sensor.canvas1.get_width_height(), "RGB")
             window.blit(surf,(dimensionx,dimensiony + 10))
             surf = pygame.image.fromstring(sensor.graphicCO2, sensor.canvas2.get_width_height(), "RGB")
             window.blit(surf, (dimensionx, dimensiony+distancey + 10))
-            surf = pygame.image.fromstring(sensor.graphicTemp, sensor.canvas2.get_width_height(), "RGB")
+            surf = pygame.image.fromstring(sensor.graphicTemp, sensor.canvas3.get_width_height(), "RGB")
             window.blit(surf, (dimensionx+distancex, dimensiony + 10))
-            surf = pygame.image.fromstring(sensor.graphicTVOC, sensor.canvas2.get_width_height(), "RGB")
+            surf = pygame.image.fromstring(sensor.graphicTVOC, sensor.canvas4.get_width_height(), "RGB")
             window.blit(surf, (dimensionx+distancex, dimensiony + distancey + 10))
+            surf = pygame.image.fromstring(sensor.graphicUltraViolet, sensor.canvas5.get_width_height(), "RGB")
+            window.blit(surf, (2*distancex, dimensiony + 10))
 
         if (flag == False):
             continue
@@ -339,9 +372,14 @@ def WindowPygame():
         window.blit(CO2, (dimensionx, dimensiony+distancey))
         window.blit(Temp, (dimensionx+distancex, dimensiony))
         window.blit(TVOC, (dimensionx+distancex, dimensiony+distancey))
+        window.blit(ultraViolet, (dimensionx + 2*distancex, dimensiony))
 
         blue = (7, 88, 230)
         light_blue = (47, 128, 255)
+
+        #Arduino Configuration
+
+        window.blit(myFont.render("Configuration ", 0,(0,0,0)), ((screen_width * 0.84), (screen_height * 0.82)))
 
         button("Conectar", (screen_width * 0.898), (screen_height * 0.8699), (screen_width * 0.08789), (screen_height * 0.052083), blue, light_blue, window, sensor.recollectData)
         button("Desconectar", (screen_width * 0.898), (screen_height * 0.936), (screen_width * 0.08789), (screen_height * 0.052083), blue, light_blue, window, sensor.stopCollectingData)
@@ -353,4 +391,4 @@ def WindowPygame():
 
 
 if __name__ == '__main__':
-    WindowPygame()
+    WindowPygame("COM3")
