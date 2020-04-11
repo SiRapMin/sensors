@@ -1,20 +1,17 @@
 ######################## IMPORTS ########################
-from pygame.locals import *
-from tkinter import *
-from datetime import date
-from datetime import datetime
-#import datetime
-from pymongo import MongoClient
-import matplotlib.backends.backend_agg as agg
-import easygui as eg
-import pygame
-import sys
 import threading
 import time
-import serial
-import pylab
+from datetime import datetime
+import json
 import matplotlib
-import math
+import matplotlib.backends.backend_agg as agg
+import pygame
+import pylab
+import serial
+from pygame.locals import *
+# import datetime
+from pymongo import MongoClient
+
 matplotlib.use("Agg")
 
 ######################## CLASS ########################
@@ -72,13 +69,14 @@ class Sensor():
         second = str(format(today.second))
 
         dateNow = year +'-'+ month +'-'+ day +'T'+ hour +':'+ minute +':'+ second
-        print('AQUI'+dateNow)
+        #print('AQUI'+dateNow)
         d = datetime.strptime(dateNow, "%Y-%m-%dT%H:%M:%S") 
-        print('TAMBIEN AQUI'+str(d))
+        #print('TAMBIEN AQUI'+str(d))
         self.db.CO2.insert_one({'valor': self.CO2, 'fecha': d})
         self.db.TVOC.insert_one({'valor': self.TVOC, 'fecha': d})
         self.db.humidity.insert_one({'valor': self.humidity, 'fecha': d})
         self.db.temperature.insert_one({'valor': self.temperature, 'fecha': d})
+        self.db.ultraviolet.insert_one({'valor': self.ultraviolet, 'fecha': d})
 
     def startThread(self):
         self.Thread = threading.Thread(target=self.runThread)
@@ -105,6 +103,22 @@ class Sensor():
             self.uploadDataMongoDb()
 
     def getArduinoData(self):
+        #Based on json
+        data = self.arduinoPort.readline().decode(encoding='UTF-8', errors='strict')
+        print('json: '+data)
+        json_sensors = json.loads(data)
+        self.CO2 = float(json_sensors['CO2'])
+        self.TVOC = float(json_sensors['TVOC'])
+        self.humidity = float(json_sensors['HUM'])
+        self.temperature = float(json_sensors['TEMP'])
+        self.ultraviolet = float(json_sensors['UV'])
+        self.CO2list.append(self.CO2)
+        self.TVOClist.append(self.TVOC)
+        self.humiditylist.append(self.humidity)
+        self.temperaturelist.append(self.temperature)
+        self.ultravioletlist.append(self.ultraviolet)
+        #Based on sequence
+        '''
         # En el siguiente orden llega la información por el puerto
         # CO2
         self.CO2 = float(self.arduinoPort.readline().decode(encoding='UTF-8', errors='strict'))
@@ -126,9 +140,9 @@ class Sensor():
         self.ultraviolet = float(self.arduinoPort.readline().decode(encoding='UTF-8', errors='strict'))
         print('Ultraviolet Value: ' + str(self.ultraviolet))
         self.ultravioletlist.append(self.ultraviolet)
+        '''
         self.generateMatplot()
         time.sleep(1)
-
 
     def generateMatplot(self):
         global screen_height
@@ -298,6 +312,10 @@ def AAfilledRoundedRect(surface,rect,color,radius=0.4):
 
 
 def WindowPygame(puertoSerial):
+
+    if puertoSerial is '':
+        return
+
     pygame.init()
     print(puertoSerial)
     # Crear ventana
