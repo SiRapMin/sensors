@@ -56,7 +56,7 @@ model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=['accurac
 
 print('Training Model')
 
-model.fit(x_train,y_train,validation_data=(x_test,y_test),epochs=10)
+model.fit(x_train,y_train,validation_data=(x_test,y_test),epochs=8)
 
 print('Prediciendo')
 
@@ -74,9 +74,9 @@ print(predicciones_test[:10])
 
 print('Guardando modelo')
 model_json = model.to_json()
-with open("TrainModelAfterMining.json", "w") as json_file:
+with open("model_train(ocho_epocas).json", "w") as json_file:
     json_file.write(model_json)
 # serializar los pesos a HDF5
-model.save_weights("TrainModelAfterMining.h5")
+model.save_weights("model_train(ocho_epocas).h5")
 
 print("Model Saved!")

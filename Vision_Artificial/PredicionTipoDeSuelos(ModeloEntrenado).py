@@ -1,6 +1,6 @@
+import easygui as eg
 import numpy as np
 from PIL import Image
-import easygui as eg
 from keras.models import model_from_json
 
 ############## POSIBLES CLASES ##################

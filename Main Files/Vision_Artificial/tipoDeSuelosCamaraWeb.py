@@ -13,6 +13,7 @@ import sys
 import tensorflow as tf
 
 ALTITUDE_BASE = 16
+NAME_NET_MODEL='model_train(ocho_epocas)'
 
 def nothing(x):
     pass
@@ -26,6 +27,7 @@ class VisionArtificial():
         self.ground_preserved = ['Bosque','Forest','Pasto','Pasture']
         self.ground_medium = ['HerbaceousVegetation','PermanentCrop','Vegetación herbácea','Cultivo permanente']
         self.ground_water = ['River','SeaLake','Rio','Mar']
+        '''
         self.dic_clas = {0: 'AnnualCrop',
                     1: 'Forest',
                     2: 'HerbaceousVegetation',
@@ -67,7 +69,7 @@ class VisionArtificial():
                             6: 'Residencial',
                             7: 'Rio',
                             8: 'Mar'}
-        '''
+
         self.loaded_model = None
         self.loadNeuralNetwork()
         self.WebCamWindow = None
@@ -76,7 +78,7 @@ class VisionArtificial():
     def loadNeuralNetwork(self):
 
         # cargar json y crear el modelo
-        json_file = open('Vision_Artificial/tipodesuelos.json', 'r')
+        json_file = open('Vision_Artificial/'+NAME_NET_MODEL+'.json', 'r')
         loaded_model_json = json_file.read()
         json_file.close()
         self.loaded_model = model_from_json(loaded_model_json)
@@ -89,7 +91,7 @@ class VisionArtificial():
         set_session(sess)
 
         # Cargar pesos al nuevo modelo
-        self.loaded_model.load_weights("Vision_Artificial/tipodesuelos.h5")
+        self.loaded_model.load_weights("Vision_Artificial/"+NAME_NET_MODEL+".h5")
 
         #print("Cargado modelo desde disco.")
 
