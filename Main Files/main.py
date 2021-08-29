@@ -56,8 +56,17 @@ class Sensor():
 
 ######################## METHODS ########################
     def mongoConnect(self):
-        con = MongoClient('localhost', 27017)
-        self.db = con.sensors
+        try:
+            f = open('../mongoCredentials.json')
+            data = json.load(f)
+        except:
+            print("---------------MONGO CREDENTIALS FILE MISSING---------------")
+
+        try:
+            client = MongoClient(data["mongoKey"])
+            self.db = client.get_database(data["DB_name"])
+        except:
+            print("---------------------- MONGO DATABASE CONNECTION FAILED -----------------")
 
     def uploadDataMongoDb(self):
         today = datetime.now()
@@ -72,11 +81,11 @@ class Sensor():
         #print('AQUI'+dateNow)
         d = datetime.strptime(dateNow, "%Y-%m-%dT%H:%M:%S") 
         #print('TAMBIEN AQUI'+str(d))
-        self.db.CO2.insert_one({'valor': self.CO2, 'fecha': d})
-        self.db.TVOC.insert_one({'valor': self.TVOC, 'fecha': d})
-        self.db.humidity.insert_one({'valor': self.humidity, 'fecha': d})
-        self.db.temperature.insert_one({'valor': self.temperature, 'fecha': d})
-        self.db.ultraviolet.insert_one({'valor': self.ultraviolet, 'fecha': d})
+        self.db.CO2.insert_one({'value': self.CO2, 'date': d})
+        self.db.TVOC.insert_one({'value': self.TVOC, 'date': d})
+        self.db.humidity.insert_one({'value': self.humidity, 'date': d})
+        self.db.temperature.insert_one({'value': self.temperature, 'date': d})
+        self.db.ultraviolet.insert_one({'value': self.ultraviolet, 'date': d})
 
     def startThread(self):
         self.Thread = threading.Thread(target=self.runThread)
@@ -240,7 +249,9 @@ class Sensor():
         
 
     def recollectData(sensor):
+        print("Conectando")
         sensor.arduinoConnect()
+        print("Contectado")
         sensor.mongoConnect()
         sensor.startThread()
 
@@ -319,7 +330,7 @@ def WindowPygame(puertoSerial):
     pygame.init()
     print(puertoSerial)
     # Crear ventana
-    window = pygame.display.set_mode((0, 0), FULLSCREEN)
+    window = pygame.display.set_mode((0, 0))
     global screen_height
     screen_height = pygame.display.Info().current_h
     global screen_width 
@@ -410,3 +421,24 @@ def WindowPygame(puertoSerial):
 
 if __name__ == '__main__':
     WindowPygame("COM3")
+    # client = MongoClient("mongodb+srv://test:test@sensorsdata.lp3o2.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+    # db = client.get_database('sensors_DB')
+    # records = db.CO2
+    # print(records.count_documents({}))
+    # today = datetime.now()
+    # day = str(format(today.day))
+    # month = str(format(today.month))
+    # year = str(format(today.year))
+    # hour = str(format(today.hour))
+    # minute = str(format(today.minute))
+    # second = str(format(today.second))
+    # dateNow = year +'-'+ month +'-'+ day +'T'+ hour +':'+ minute +':'+ second
+    # d = datetime.strptime(dateNow, "%Y-%m-%dT%H:%M:%S") 
+
+    # new_CO2 = {
+    #     'value': 5,
+    #     'date' : d
+    # }
+
+    # records.insert_one(new_CO2)
+    # print(records.count_documents({}))
