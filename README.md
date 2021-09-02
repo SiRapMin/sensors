@@ -18,4 +18,4 @@ pip install -r requirements.txt
 Requirements:<br>
 * Put the serial port you will use in the in the arduinoPort variable inside the conectarArduino procedure, by this way the data will be read from the avaible port from your computer.<br>
 * Serial port needs to be free to make sure that data will be write correctly.
-* Have the [mongoCredentials.json](https://drive.google.com/file/d/1H0q1zoWg0-hLZHG9_GzQtTtOU7AyInSj/view?usp=sharing) in the project root directory to access the MongoDB Cloud Database.
+* Have the [mongoCredentials.json](https://drive.google.com/file/d/1RCQhKVxuKNBYfXPQf7sAzbP1WW2Pegh3/view?usp=sharing) in the project root directory to access the MongoDB Cloud Database.
